@@ -1,10 +1,12 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
+using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.Application.Dtos;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.ListCarts;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -76,5 +78,37 @@ public class CartsController(IMediator mediator, IMapper mapper) : BaseControlle
         var carts = mapper.Map<List<CartDto>>(response.Carts);
 
         return OkPaginated(new PaginatedList<CartDto>(carts, response.TotalItems, request.Page, request.Size));
+    }
+
+    /// <summary>
+    /// Update a specific cart
+    /// </summary>
+    /// <param name="id">The unique identifier of the cart</param>
+    /// <param name="request">The cart updating request</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated cart details</returns>
+    /// <remarks>
+    /// Return http status 404 when cart not found
+    /// </remarks>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<UpdateCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateCart([FromRoute] Guid id, [FromBody] UpdateCartRequest request, CancellationToken cancellationToken)
+    {
+        var validator = new UpdateCartRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = mapper.Map<UpdateCartCommand>((id, request));
+        var result = await mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<UpdateCartResponse>
+        {
+            Success = true,
+            Message = "Cart updated successfully",
+            Data = mapper.Map<UpdateCartResponse>(result)
+        });
     }
 }
