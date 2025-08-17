@@ -1,6 +1,10 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
+using Ambev.DeveloperEvaluation.Application.Dtos;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.ListCarts;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -45,5 +49,32 @@ public class CartsController(IMediator mediator, IMapper mapper) : BaseControlle
             Message = "Cart created successfully",
             Data = mapper.Map<CreateCartResponse>(response)
         });
+    }
+
+    /// <summary>
+    /// Retrieve a list of all carts
+    /// </summary>
+    /// <param name="request">ordering and pagination settings to list cards</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated carts</returns>
+    /// <remarks>
+    /// Return http status 404 when cart not found
+    /// </remarks>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ListCarts(ListCartsRequest request, CancellationToken cancellationToken)
+    {
+        var validator = new ListCartsRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = mapper.Map<ListCartsCommand>(request);
+        var response = await mediator.Send(command, cancellationToken);
+        var carts = mapper.Map<List<CartDto>>(response.Carts);
+
+        return OkPaginated(new PaginatedList<CartDto>(carts, response.TotalItems, request.Page, request.Size));
     }
 }
