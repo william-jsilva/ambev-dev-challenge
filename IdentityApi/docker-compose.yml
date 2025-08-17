@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  ambev.william.identity.db:
+    container_name: ambev_william_identity_db
+    image: postgres:13
+    environment:
+      POSTGRES_DB: db_identity
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: ev@luAt10n
+    ports:
+      - "5432:5432"
+      - "32768:5432"
+    restart: unless-stopped
+    networks:
+      - ambev_network
+
+  ambev.william.identity.webapi:
+    container_name: ambev_william_identity_webapi
+    image: ${DOCKER_REGISTRY-}ambevdeveloperevaluationwebapi
+    build:
+      context: .
+      dockerfile: src/Ambev.DeveloperEvaluation.WebApi/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - ambev.william.identity.db
+    networks:
+      - ambev_network
+
+networks:
+  ambev_network:
+    driver: bridge
