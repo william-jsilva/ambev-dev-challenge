@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  
+  # ambev.william.product.webapi:
+  #   container_name: ambev_william_product_webapi
+  #   image: ${DOCKER_REGISTRY-}ambevdeveloperevaluationwebapi
+  #   build:
+  #     context: .
+  #     dockerfile: src/Ambev.DeveloperEvaluation.WebApi/Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_HTTP_PORTS=8080
+  #     - ASPNETCORE_HTTPS_PORTS=8081
+  #   ports:
+  #     - "3080:8080"
+  #     - "3081:8081"
+  #   volumes:
+  #     - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+  #     - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  #   depends_on:
+  #     - ambev.william.product.mongo
+  #     - ambev.william.product.redis
+  #   networks:
+  #     - ambev_network
+
+  ambev.william.product.mongo:
+    container_name: ambev_william_product_mongo 
+    image: mongo:8.0    
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: developer
+        MONGO_INITDB_ROOT_PASSWORD: evaluAt10n
+        MONGO_INITDB_DATABASE: db_product
+    ports:
+      - "27017:27017"
+      - "49153:27017"
+    volumes:
+      - ./mongo_data:/data/db
+    networks:
+      - ambev_network
+ 
+  ambev.william.product.redis:
+    container_name: ambev_william_product_redis
+    image: redis:7.4.1-alpine     
+    command: redis-server --requirepass ev@luAt10n
+    environment:
+       MONGO_INITDB_ROOT_USERNAME: developer
+       MONGO_INITDB_ROOT_PASSWORD: ev@luAt10n
+    ports:
+       - "6379:6379"
+       - "55678:6379"
+    networks:
+      - ambev_network
+
+networks:
+  ambev_network:
+    driver: bridge
