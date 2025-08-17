@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  ambev.william.identity.db:
-    container_name: ambev_william_identity_db
+  ambev.william.cart.db:
+    container_name: ambev_william_cart_db
     image: postgres:13
     environment:
-      POSTGRES_DB: db_identity
+      POSTGRES_DB: db_cart
       POSTGRES_USER: developer
       POSTGRES_PASSWORD: ev@luAt10n
     ports:
@@ -14,9 +14,9 @@ services:
     restart: unless-stopped
     networks:
       - ambev_network
-
-  ambev.william.identity.webapi:
-    container_name: ambev_william_identity_webapi
+  
+  ambev.william.cart.webapi:
+    container_name: ambev_william_cart_webapi
     image: ${DOCKER_REGISTRY-}ambevdeveloperevaluationwebapi
     build:
       context: .
@@ -26,13 +26,13 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
     ports:
-      - "1080:8080"
-      - "1081:8081"
+      - "2080:8080"
+      - "2081:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
     depends_on:
-      - ambev.william.identity.db
+      - ambev.william.cart.db
     networks:
       - ambev_network
 
