@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
+using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.Application.Dtos;
@@ -145,5 +146,31 @@ public class CartsController(IMediator mediator, IMapper mapper) : BaseControlle
             Success = true,
             Message = "Cart deleted successfully"
         });
+    }
+
+    /// <summary>
+    /// Retrieve a specific cart by ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the cart</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The cart details if found</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetCart([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var request = new GetCartRequest { Id = id };
+        var validator = new GetCartRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = mapper.Map<GetCartCommand>(request.Id);
+        var result = await mediator.Send(command, cancellationToken);
+        var cart = mapper.Map<CartDto>(result);
+
+        return Ok(cart);
     }
 }
