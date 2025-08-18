@@ -18,9 +18,19 @@ public class Sale : BaseEntity
         Status = SaleStatus.Active;
     }
 
-    
+    /// <summary>
+    /// Sale number
+    /// </summary>
     public long SaleNumber { get; set; }
-    public decimal TotalSaleAmount { get; }
+
+    /// <summary>
+    /// <see langword="null"/> if the sale is not completed, otherwise the total amount of the sale.
+    /// </summary>
+    public decimal TotalSaleAmount { get; set; }
+
+    /// <summary>
+    /// Branch where the sale was made
+    /// </summary>
     public string Branch { get; set; }
 
     /// <summary>

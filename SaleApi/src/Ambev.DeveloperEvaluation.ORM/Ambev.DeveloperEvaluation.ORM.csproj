@@ -23,7 +23,6 @@
 		<ProjectReference Include="..\Ambev.DeveloperEvaluation.Domain\Ambev.DeveloperEvaluation.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Mapping\" />
 	  <Folder Include="Migrations\" />
 	</ItemGroup>
 </Project>

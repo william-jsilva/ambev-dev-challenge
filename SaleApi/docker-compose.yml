@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: developer
       POSTGRES_PASSWORD: ev@luAt10n
     ports:
-      - "5432:5432"
-      - "32768:5432"
+      - "5433:5432"
+      - "32769:5432"
     restart: unless-stopped
     networks:
       - ambev_network

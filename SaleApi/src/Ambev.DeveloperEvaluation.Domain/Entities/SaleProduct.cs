@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -31,6 +32,21 @@ public class SaleProduct : BaseEntity // ToDo: avaliar de não usar class e não
     /// Quantity of the product
     /// </summary>
     public int Quantity { get; set; }
+
+    /// <summary>
+    /// Unit price of the product
+    /// </summary>
+    public decimal UnitPrice { get; set; }
+
+    /// <summary>
+    /// Total price of the product (Quantity * UnitPrice)
+    /// </summary>
+    public decimal Discounts { get; set; }
+
+    /// <summary>
+    /// Total amount of the product (Quantity * UnitPrice - Discounts)
+    /// </summary>
+    public decimal TotalAmount { get; set; }
 
     /// <summary>
     /// The current status of the product's sale
