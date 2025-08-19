@@ -19,9 +19,8 @@ public class CreateSaleProfile : Profile
         CreateMap<SaleProduct, SaleProductDto>();
 
         CreateMap<CreateSaleRequest, CreateSaleCommand>()
-            .ForCtorParam("userId", opt => opt.MapFrom(src => src.UserId))
-            .ForCtorParam("date", opt => opt.MapFrom(src => src.Date))
-            .ForCtorParam("products", opt => opt.MapFrom(src => src.Products));
+            .ForCtorParam("cartId", opt => opt.MapFrom(src => src.CartId))
+            .ForCtorParam("date", opt => opt.MapFrom(src => src.Date));
 
         CreateMap<CreateSaleResult, CreateSaleResponse>();
     }

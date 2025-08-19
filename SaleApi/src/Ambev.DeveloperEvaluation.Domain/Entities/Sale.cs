@@ -69,6 +69,20 @@ public class Sale : BaseEntity
     public List<SaleProduct> Products { get; set; } = [];
 
     /// <summary>
+    /// Calculates the discount for each product in the sale.
+    /// </summary>
+    public void CalculateTotalSaleAmount()
+    {
+        foreach (var product in Products)
+        {
+            product.CalculateDiscount();
+            product.CalculateTotalAmount();
+        }
+
+        TotalSaleAmount = Products.Sum(product => product.TotalAmount);
+    }
+
+    /// <summary>
     /// Changes the status of the sale deleted.
     /// </summary>
     public void DefineDeleted()

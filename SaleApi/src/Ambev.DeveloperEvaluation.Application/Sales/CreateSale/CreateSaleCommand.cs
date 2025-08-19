@@ -1,5 +1,4 @@
 ﻿using Ambev.DeveloperEvaluation.Common.Validation;
-using Ambev.DeveloperEvaluation.Domain.Entities;
 using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
@@ -9,20 +8,17 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 /// </summary>
 /// <remarks>
 /// This command is used to capture the required data for creating a sale, 
-/// including userId, date and a list of products.
-/// It implements <see cref="IRequest{TResponse}"/> to initiate the request 
-/// that returns a <see cref="CreateSaleResult"/>.
-/// 
+/// including userId, date and a cartId.
 /// The data provided in this command is validated using the 
 /// <see cref="CreateSaleCommandValidator"/> which extends 
 /// populated and follow the required rules.
 /// </remarks>
-public struct CreateSaleCommand(Guid userId, DateTimeOffset date, IEnumerable<SaleProduct> products) : IRequest<CreateSaleResult>
+public struct CreateSaleCommand(Guid cartId, DateTimeOffset date, string branch) : IRequest<CreateSaleResult>
 {
     /// <summary>
-    /// User Id
+    /// Cart Id associated with the sale
     /// </summary>
-    public Guid UserId { get; private set; } = userId;
+    public Guid CartId { get; private set; } = cartId;
 
     /// <summary>
     /// Date of sale
@@ -30,9 +26,9 @@ public struct CreateSaleCommand(Guid userId, DateTimeOffset date, IEnumerable<Sa
     public DateTimeOffset Date { get; private set; } = date;
 
     /// <summary>
-    /// List of produts
+    /// Branch where the sale was made
     /// </summary>
-    public IEnumerable<SaleProduct> Products { get; private set; } = products;
+    public string Branch { get; set; } = branch;
 
     /// <summary>
     /// Validates the command data.

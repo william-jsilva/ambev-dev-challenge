@@ -18,14 +18,11 @@ public class CreateSaleCommandValidator : AbstractValidator<CreateSaleCommand>
     /// </remarks>
     public CreateSaleCommandValidator()
     {
-        RuleFor(user => user.UserId)
-            .Must(userId => Guid.Empty != userId).WithMessage("UserId must a valid guid");
+        RuleFor(user => user.CartId)
+            .Must(userId => Guid.Empty != userId).WithMessage("CartId must a valid guid");
 
         RuleFor(user => user.Date)
             .GreaterThanOrEqualTo(DateTimeOffset.Now.Date).WithMessage("Date must be greater or equal than today");
 
-        RuleFor(user => user.Products)
-            .NotEmpty().WithMessage("Products cannot be empty.")
-            .Must(products => products.All(product => product != null)).WithMessage("All products must be valid.");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Validation;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
@@ -10,8 +11,10 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 /// Handler for processing CreateSaleCommand requests
 /// </summary>
 /// <param name="saleRepository">The sale repository</param>
+/// <param name="cartRepository">The cart repository</param>
 /// <param name="mapper">The AutoMapper instance</param>
-public class CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper) : IRequestHandler<CreateSaleCommand, CreateSaleResult>
+public class CreateSaleHandler(ISaleRepository saleRepository, ICartRepository cartRepository, IMapper mapper) 
+    : IRequestHandler<CreateSaleCommand, CreateSaleResult>
 {
     /// <summary>
     /// Handles the CreateSaleCommand request
@@ -21,21 +24,39 @@ public class CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper) :
     /// <returns>The created sale details</returns>
     public async Task<CreateSaleResult> Handle(CreateSaleCommand command, CancellationToken cancellationToken)
     {
-        var validator = new CreateSaleCommandValidator();
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        await ValidateCommand(command, cancellationToken);
 
-        if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
+        var cart = await cartRepository.GetByIdAsync(command.CartId, cancellationToken) ??
+            throw new InvalidOperationException($"Cart with cartId {command.CartId} not found");
 
-        var existingSale = await saleRepository.GetActiveByUserIdAsync(command.UserId, cancellationToken);
-        if (existingSale != null)
-            throw new InvalidOperationException($"Sale with userId {command.UserId} already exists");
+        var sale = mapper.Map<Sale>((command, cart));
 
-        var sale = mapper.Map<Sale>(command);
+        sale.CalculateTotalSaleAmount();
+
+        await ValidateSale(sale, cancellationToken);
 
         var createdSale = await saleRepository.CreateAsync(sale, cancellationToken);
+
         var result = mapper.Map<CreateSaleResult>(createdSale);
 
         return result;
+    }
+
+    private static async Task ValidateCommand(CreateSaleCommand command, CancellationToken cancellationToken)
+    {
+        var createSaleCommandValidator = new CreateSaleCommandValidator();
+        var createSaleCommandValidationResult = await createSaleCommandValidator.ValidateAsync(command, cancellationToken);
+
+        if (!createSaleCommandValidationResult.IsValid)
+            throw new ValidationException(createSaleCommandValidationResult.Errors);
+    }
+
+    private static async Task ValidateSale(Sale sale, CancellationToken cancellationToken)
+    {
+        var saleValidator = new SaleValidator();
+        var saleValidatorResult = await saleValidator.ValidateAsync(sale, cancellationToken);
+
+        if (!saleValidatorResult.IsValid)
+            throw new ValidationException(saleValidatorResult.Errors);
     }
 }

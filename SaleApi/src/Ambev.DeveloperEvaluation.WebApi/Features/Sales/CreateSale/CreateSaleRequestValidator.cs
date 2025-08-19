@@ -18,29 +18,11 @@ public class CreateSaleRequestValidator : AbstractValidator<CreateSaleRequest>
     /// </remarks>
     public CreateSaleRequestValidator()
     {
-        RuleFor(user => user.UserId)
-            .Must(userId => Guid.Empty != userId).WithMessage("UserId must a valid guid.");
-
-        RuleForEach(user => user.Products).ChildRules(product =>
-        {
-            product.RuleFor(p => p.ProductId)
-                .Must(productId => Guid.Empty != productId)
-                .WithMessage(p => "ProductId must a valid guid.");
-        });
-
-        RuleForEach(user => user.Products).ChildRules(product =>
-        {
-            product.RuleFor(p => p.Quantity)
-                .GreaterThan(0)
-                .WithMessage(p => $"Product '{p.ProductId}' has an invalid quantity: {p.Quantity}.");
-        });
+        RuleFor(user => user.CartId)
+            .Must(userId => Guid.Empty != userId).WithMessage("CartId must a valid guid.");
 
         RuleFor(user => user.Date)
             .NotEmpty().WithMessage("Date must not be empty.")
             .GreaterThanOrEqualTo(DateTimeOffset.Now.Date).WithMessage("Date must be greater or equal than today");
-
-        RuleFor(user => user.Products)
-            .NotEmpty().WithMessage("Products cannot be empty.")
-            .Must(products => products.All(product => product != null)).WithMessage("All products must be valid.");
     }
 }

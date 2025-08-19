@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ambev.DeveloperEvaluation.ORM.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20250818020738_CreateSaleTables")]
+    [Migration("20250819011233_CreateSaleTables")]
     partial class CreateSaleTables
     {
         /// <inheritdoc />
@@ -47,7 +47,11 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("SaleNumber")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("SaleNumber"));
+                    NpgsqlPropertyBuilderExtensions.HasIdentityOptions(b.Property<long>("SaleNumber"), 1L, null, null, null, null, null);
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -68,9 +72,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Status");
-
-                    b.HasIndex("UserId", "DeletedAt")
-                        .IsUnique();
 
                     b.ToTable("Sales", (string)null);
                 });

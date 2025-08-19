@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using MediatR;
+using System.Runtime.Serialization;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -79,4 +80,29 @@ public class SaleProduct : BaseEntity // ToDo: avaliar de não usar class e não
         DeletedAt = DateTimeOffset.UtcNow;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
-};
+
+    public void CalculateDiscount()
+    {
+        const int minQuantityToTenPercents = 4;
+        const int maxQuantityToTenPercents = 10;
+        const decimal tenPercentDescount = 0.9M;
+
+        const int minQuantityToTwentyPercents = 10;
+        const int maxQuantityToTwentyPercents = 20;
+        const decimal twentyPercentDescount = 0.8M;
+
+        const decimal defaultDiscount = 1.0M;
+
+        Discounts = Quantity switch
+        {
+            >= minQuantityToTenPercents and < maxQuantityToTenPercents => tenPercentDescount,
+            >= minQuantityToTwentyPercents and < maxQuantityToTwentyPercents => twentyPercentDescount,
+            _ => defaultDiscount
+        };
+    }
+
+    public void CalculateTotalAmount()
+    {
+        TotalAmount = Quantity * UnitPrice * Discounts;
+    }
+}

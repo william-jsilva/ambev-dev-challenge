@@ -17,5 +17,13 @@ public class CreateSaleProfile : Profile
         CreateMap<CreateSaleCommand, Sale>();
         CreateMap<Sale, CreateSaleResult>();
         CreateMap<SaleProduct, SaleProductDto>();
+        CreateMap<CartProduct, SaleProduct>();
+        CreateMap<(CreateSaleCommand, Cart), Sale>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Item2.UserId))
+            .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Item1.Date))
+            .ForMember(dest => dest.Branch, opt => opt.MapFrom(src => src.Item1.Branch))
+            .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Item2.Products));
+
+        ;
     }
 }

@@ -62,7 +62,6 @@ public class SaleRepository(DefaultContext context) : BaseRepository, ISaleRepos
             cancellationToken);
     }
 
-
     /// <summary>
     /// Deletes a sale from the database logically
     /// </summary>

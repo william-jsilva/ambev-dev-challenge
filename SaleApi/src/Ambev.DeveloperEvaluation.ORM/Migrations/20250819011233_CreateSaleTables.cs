@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,7 +17,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    SaleNumber = table.Column<long>(type: "bigint", nullable: false),
+                    SaleNumber = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:IdentitySequenceOptions", "'1', '1', '', '', 'False', '1'")
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     TotalSaleAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m),
                     Branch = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -73,12 +76,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "IX_Sales_Status",
                 table: "Sales",
                 column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sales_UserId_DeletedAt",
-                table: "Sales",
-                columns: new[] { "UserId", "DeletedAt" },
-                unique: true);
         }
 
         /// <inheritdoc />

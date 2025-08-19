@@ -17,14 +17,24 @@ public class SaleValidator : AbstractValidator<Sale>
     /// <inheritdoc />
     public SaleValidator()
     {
-        RuleFor(user => user.UserId)
+        const int maxProductsCount = 20;
+
+        RuleFor(sale => sale.UserId)
             .Must(userId => Guid.Empty != userId).WithMessage("UserId must a valid guid");
 
-        RuleFor(user => user.Date)
+        RuleFor(sale => sale.Date)
             .GreaterThanOrEqualTo(DateTimeOffset.Now.Date).WithMessage("Date must be greater or equal than today");
 
-        RuleFor(user => user.Products)
+        RuleFor(sale => sale.Products)
             .NotEmpty().WithMessage("Products cannot be empty.")
             .Must(products => products.All(product => product != null)).WithMessage("All products must be valid.");
+
+        RuleFor(sale => sale.Products)
+            .NotNull().WithMessage("Products can't be null")
+            .Must(list => list.Count <= maxProductsCount).WithMessage($"Products count must be less than or equal to {maxProductsCount}");
+
+        RuleForEach(sale => sale.Products)
+            .NotNull().WithMessage("Product can't be null")
+            .SetValidator(new SaleProductValidator());
     }
 }
