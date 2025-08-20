@@ -47,22 +47,6 @@ public class SaleRepository(DefaultContext context) : BaseRepository, ISaleRepos
     }
 
     /// <summary>
-    /// Retrieves a sale active by userId
-    /// </summary>
-    /// <param name="userId">The userId to search for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The sale if found, null otherwise</returns>
-    public async Task<Sale?> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await context.Sales
-            .AsNoTracking()
-            .FirstOrDefaultAsync(user
-            => user.UserId == userId // TODO: Add a specification
-            && user.Status == SaleStatus.Active,
-            cancellationToken);
-    }
-
-    /// <summary>
     /// Deletes a sale from the database logically
     /// </summary>
     /// <param name="id">The unique identifier of the sale to delete</param>

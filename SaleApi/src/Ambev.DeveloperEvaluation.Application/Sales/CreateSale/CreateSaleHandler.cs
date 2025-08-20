@@ -1,4 +1,6 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Application.Events;
+using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Validation;
 using AutoMapper;
@@ -13,7 +15,8 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 /// <param name="saleRepository">The sale repository</param>
 /// <param name="cartRepository">The cart repository</param>
 /// <param name="mapper">The AutoMapper instance</param>
-public class CreateSaleHandler(ISaleRepository saleRepository, ICartRepository cartRepository, IMapper mapper) 
+/// <param name="eventPublisher">The event publisher</param>
+public class CreateSaleHandler(ISaleRepository saleRepository, ICartRepository cartRepository, IMapper mapper, IEventPublisher eventPublisher) 
     : IRequestHandler<CreateSaleCommand, CreateSaleResult>
 {
     /// <summary>
@@ -36,6 +39,9 @@ public class CreateSaleHandler(ISaleRepository saleRepository, ICartRepository c
         await ValidateSale(sale, cancellationToken);
 
         var createdSale = await saleRepository.CreateAsync(sale, cancellationToken);
+
+        // Publish SaleCreated event
+        await eventPublisher.PublishAsync(new SaleCreatedEvent(createdSale), cancellationToken);
 
         var result = mapper.Map<CreateSaleResult>(createdSale);
 

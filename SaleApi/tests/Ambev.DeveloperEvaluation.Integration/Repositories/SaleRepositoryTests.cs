@@ -195,32 +195,6 @@ public class SaleRepositoryTests : IClassFixture<DatabaseFixture>
     }
 
     [Fact]
-    public async Task GetByUserIdAsync_ExistingSales_ShouldReturnSales()
-    {
-        // Arrange
-        using var scope = _fixture.ServiceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-        var repository = new SaleRepository(context);
-
-        var userId = Guid.NewGuid();
-        var sale1 = CreateValidSale();
-        sale1.UserId = userId;
-        var sale2 = CreateValidSale();
-        sale2.UserId = userId;
-
-        context.Sales.AddRange(sale1, sale2);
-        await context.SaveChangesAsync();
-
-        // Act
-        var result = await repository.GetByUserIdAsync(userId, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(2);
-        result.Should().AllSatisfy(s => s.UserId.Should().Be(userId));
-    }
-
-    [Fact]
     public async Task GetTotalAsync_WithSales_ShouldReturnCorrectCount()
     {
         // Arrange

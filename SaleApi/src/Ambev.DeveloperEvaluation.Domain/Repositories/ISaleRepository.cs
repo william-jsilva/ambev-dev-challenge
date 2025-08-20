@@ -31,14 +31,6 @@ public interface ISaleRepository
     Task<Sale?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a sale active by userId
-    /// </summary>
-    /// <param name="userId">The userId to search for</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The sale if found, null otherwise</returns>
-    Task<Sale?> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Retrieves a paginated list of sales with optional ordering
     /// </summary>
     /// <param name="page"></param>

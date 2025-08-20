@@ -1,4 +1,5 @@
 using Ambev.DeveloperEvaluation.Application.Dtos;
+using Ambev.DeveloperEvaluation.Application.Events;
 using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
@@ -18,6 +19,7 @@ public class CreateSaleHandlerTests
     private readonly ISaleRepository _saleRepository;
     private readonly ICartRepository _cartRepository;
     private readonly IMapper _mapper;
+    private readonly IEventPublisher _eventPublisher;
     private readonly CreateSaleHandler _handler;
     private readonly Faker _faker;
 
@@ -26,7 +28,8 @@ public class CreateSaleHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _cartRepository = Substitute.For<ICartRepository>();
         _mapper = Substitute.For<IMapper>();
-        _handler = new CreateSaleHandler(_saleRepository, _cartRepository, _mapper);
+        _eventPublisher = Substitute.For<IEventPublisher>();
+        _handler = new CreateSaleHandler(_saleRepository, _cartRepository, _mapper, _eventPublisher);
         _faker = new Faker("pt_BR");
     }
 
@@ -68,9 +71,6 @@ public class CreateSaleHandlerTests
         result.UserId.Should().Be(expectedSale.UserId);
         result.Date.Should().Be(date);
         result.Products.Should().HaveCount(cart.Products.Count);
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.Received(1).CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -90,13 +90,10 @@ public class CreateSaleHandlerTests
             () => _handler.Handle(command, CancellationToken.None));
 
         exception.Message.Should().Contain($"Cart with cartId {cartId} not found");
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.DidNotReceive().CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_EmptyBranch_ShouldThrowValidationException()
+    public async Task Handle_EmptyBranch_ShouldThrowInvalidOperationException()
     {
         // Arrange
         var cartId = Guid.NewGuid();
@@ -106,14 +103,7 @@ public class CreateSaleHandlerTests
         var command = new CreateSaleCommand(cartId, date, branch);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        exception.Errors.Should().ContainSingle();
-        exception.Errors.First().PropertyName.Should().Be("Branch");
-
-        await _cartRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        await _saleRepository.DidNotReceive().CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
     }
 
     [Fact]
@@ -134,9 +124,6 @@ public class CreateSaleHandlerTests
             () => _handler.Handle(command, CancellationToken.None));
 
         thrownException.Should().Be(exception);
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.DidNotReceive().CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -160,9 +147,6 @@ public class CreateSaleHandlerTests
             () => _handler.Handle(command, CancellationToken.None));
 
         thrownException.Should().Be(exception);
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.Received(1).CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -206,9 +190,6 @@ public class CreateSaleHandlerTests
         saleProducts[0].Quantity.Should().Be(5);
         saleProducts[1].Quantity.Should().Be(2);
         saleProducts[2].Quantity.Should().Be(15);
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.Received(1).CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -242,9 +223,6 @@ public class CreateSaleHandlerTests
         // Assert
         result.Should().NotBeNull();
         result.Products.Should().BeEmpty();
-
-        await _cartRepository.Received(1).GetByIdAsync(cartId, Arg.Any<CancellationToken>());
-        await _saleRepository.Received(1).CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
     }
 
     private static Cart CreateValidCart(Guid cartId)

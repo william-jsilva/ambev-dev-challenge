@@ -23,6 +23,15 @@ public class WebApplicationFactory : WebApplicationFactory<Ambev.DeveloperEvalua
                 services.Remove(descriptor);
             }
 
+            // Also remove the DefaultContext registration
+            var contextDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DefaultContext));
+
+            if (contextDescriptor != null)
+            {
+                services.Remove(contextDescriptor);
+            }
+
             // Add in-memory database for testing
             services.AddDbContext<DefaultContext>(options =>
             {

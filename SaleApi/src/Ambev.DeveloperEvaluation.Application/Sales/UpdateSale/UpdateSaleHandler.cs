@@ -1,4 +1,6 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Application.Events;
+using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
 using FluentValidation;
@@ -11,7 +13,8 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 /// </summary>
 /// <param name="saleRepository">The sale repository</param>
 /// <param name="mapper">The AutoMapper instance</param>
-public class UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper)
+/// <param name="eventPublisher">The event publisher</param>
+public class UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper, IEventPublisher eventPublisher)
     : IRequestHandler<UpdateSaleCommand, UpdateSaleResult>
 {
     /// <summary>
@@ -42,6 +45,9 @@ public class UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper)
         var sale = await saleRepository.GetByIdAsync(request.Id, cancellationToken) ??
             throw new KeyNotFoundException($"Sale with ID {request.Id} not found");
 
+        // Publish SaleModified event
+        await eventPublisher.PublishAsync(new SaleModifiedEvent(sale), cancellationToken);
+
         return mapper.Map<UpdateSaleResult>(sale);
     }
 
@@ -52,15 +58,12 @@ public class UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper)
     /// <param name="existingSale"></param>
     private static void UpdateSaleProduct(UpdateSaleCommand command, Sale existingSale)
     {
-        var existingProducts = existingSale.Products.ToList();
-        var incomingProducts = command.Products.ToList();
+        var existingProducts = existingSale?.Products?.ToList() ?? [];
+        var incomingProducts = command.Products?.ToList() ?? [];
 
         foreach (var existing in existingProducts)
-        {
             if (!incomingProducts.Any(product => product.ProductId == existing.ProductId))
                 existing.DefineDeleted();
-
-        }
 
         foreach (var incoming in incomingProducts)
         {

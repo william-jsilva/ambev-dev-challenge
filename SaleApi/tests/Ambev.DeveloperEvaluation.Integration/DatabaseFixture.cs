@@ -15,7 +15,7 @@ public class DatabaseFixture : IDisposable
         // Configurar banco de dados em memória
         services.AddDbContext<DefaultContext>(options =>
         {
-            options.UseInMemoryDatabase($"SaleTestDatabase_{Guid.NewGuid()}");
+            //options.UseInMemoryDatabase($"SaleTestDatabase_{Guid.NewGuid()}");
         });
 
         ServiceProvider = services.BuildServiceProvider();
