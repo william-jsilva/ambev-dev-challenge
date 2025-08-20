@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace Ambev.DeveloperEvaluation.ORM.Mongo;
 
@@ -39,7 +40,7 @@ public class ProductRepository : IProductRepository
         return await _ctx.Products.Find(filter).ToListAsync(ct);
     }
 
-    public async Task<Product> GetByIdAsync(string id, CancellationToken ct)
+    public async Task<Product?> GetByIdAsync(string id, CancellationToken ct)
     {
         return await _ctx.Products
             .Find(p => p.Id == id)
@@ -48,16 +49,27 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product?> CreateAsync(Product product, CancellationToken ct)
     {
-        await _ctx.Products.InsertOneAsync(product, cancellationToken: ct);
+        // Generate ID if not provided
+        if (string.IsNullOrEmpty(product.Id))
+        {
+            product.Id = ObjectId.GenerateNewId().ToString();
+        }
 
+        await _ctx.Products.InsertOneAsync(product, cancellationToken: ct);
         return product;
     }
 
     public async Task<Product?> UpdateAsync(string id, Product product, CancellationToken ct)
     {
         var filter = Builders<Product>.Filter.Eq(p => p.Id, id);
-        await _ctx.Products.ReplaceOneAsync(filter, product, cancellationToken: ct);
-        return product;
+        
+        // Ensure the product has the correct ID
+        product.Id = id;
+        
+        var result = await _ctx.Products.ReplaceOneAsync(filter, product, cancellationToken: ct);
+        
+        // Return null if no document was updated
+        return result.ModifiedCount > 0 ? product : null;
     }
 
     public async Task DeleteAsync(string id, CancellationToken ct)
@@ -71,7 +83,7 @@ public class ProductRepository : IProductRepository
         var builder = Builders<Product>.Filter;
         var filter = builder.Empty;
 
-        // Exemplo simples de filtros: igualdade, curingas e ranges
+        // Process filters: equality, wildcards, and ranges
         foreach (var param in query.Filters)
         {
             if (param.Value.Contains("*"))
@@ -82,13 +94,13 @@ public class ProductRepository : IProductRepository
             else if (param.Key.EndsWith("_min"))
             {
                 var field = param.Key.Replace("_min", "");
-                if (decimal.TryParse(param.Value, out var minVal))
+                if (double.TryParse(param.Value, out var minVal))
                     filter &= builder.Gte(field, minVal);
             }
             else if (param.Key.EndsWith("_max"))
             {
                 var field = param.Key.Replace("_max", "");
-                if (decimal.TryParse(param.Value, out var maxVal))
+                if (double.TryParse(param.Value, out var maxVal))
                     filter &= builder.Lte(field, maxVal);
             }
             else
@@ -97,7 +109,7 @@ public class ProductRepository : IProductRepository
             }
         }
 
-        // Ordenação
+        // Build sort definition
         var sortBuilder = Builders<Product>.Sort;
         SortDefinition<Product> sort = null;
 

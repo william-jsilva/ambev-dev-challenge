@@ -18,18 +18,20 @@ public class GetProductsByCategoryHandler : IRequestHandler<GetProductsByCategor
 
     public async Task<PaginationResult<ProductDto>> Handle(GetProductsByCategoryQuery request, CancellationToken ct)
     {
-        return null;
+        // Add category filter to query parameters
+        var queryWithCategory = request.Query;
+        queryWithCategory.Filters["Category"] = request.Category;
 
-        //var (items, total) = await _repo.GetByCategoryAsync(request.Category, request.Query, ct);
-        //var data = _mapper.Map<IEnumerable<ProductDto>>(items).ToList();
-        //var pages = (int)Math.Ceiling((double)total / request.Query.Size);
+        var (items, total) = await _repo.GetAsync(queryWithCategory, ct);
+        var data = _mapper.Map<IEnumerable<ProductDto>>(items).ToList();
+        var pages = (int)Math.Ceiling((double)total / request.Query.Size);
 
-        //return new PaginationResult<ProductDto>
-        //{
-        //    Data = data,
-        //    TotalItems = total,
-        //    CurrentPage = request.Query.Page,
-        //    TotalPages = pages
-        //};
+        return new PaginationResult<ProductDto>
+        {
+            Data = data,
+            TotalItems = total,
+            CurrentPage = request.Query.Page,
+            TotalPages = pages
+        };
     }
 }

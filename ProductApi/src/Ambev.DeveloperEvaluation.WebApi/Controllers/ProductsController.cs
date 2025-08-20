@@ -52,7 +52,11 @@ public class ProductsController(IMediator mediator, IConfiguration config, ICach
         if (dto.Price < 0) return BadRequest(new { type = "ValidationError", error = "Invalid input data", detail = "The 'price' field must be a positive number" });
 
         var created = await mediator.Send(new CreateProductCommand(dto), ct);
-        // invalidate lists (improve with prefix index later)
+        
+        // Invalidate relevant caches
+        await cache.RemoveByPrefixAsync("products:list:", ct);
+        await cache.RemoveByPrefixAsync("products:categories", ct);
+        
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -64,6 +68,11 @@ public class ProductsController(IMediator mediator, IConfiguration config, ICach
         var updated = await mediator.Send(new UpdateProductCommand(id, dto), ct);
         if (updated is null) return NotFound(new { type = "ResourceNotFound", error = "Product not found", detail = $"The product with ID {id} does not exist" });
 
+        // Invalidate relevant caches
+        await cache.RemoveByPrefixAsync("products:list:", ct);
+        await cache.RemoveByPrefixAsync("products:item:", ct);
+        await cache.RemoveByPrefixAsync("products:categories", ct);
+        
         return Ok(updated);
     }
 
@@ -71,7 +80,12 @@ public class ProductsController(IMediator mediator, IConfiguration config, ICach
     public async Task<ActionResult> Delete(string id, CancellationToken ct)
     {
         await mediator.Send(new DeleteProductCommand(id), ct);
-        //if (!ok) return NotFound(new { type = "ResourceNotFound", error = "Product not found", detail = $"The product with ID {id} does not exist" });
+        
+        // Invalidate relevant caches
+        await cache.RemoveByPrefixAsync("products:list:", ct);
+        await cache.RemoveByPrefixAsync("products:item:", ct);
+        await cache.RemoveByPrefixAsync("products:categories", ct);
+        
         return Ok(new { message = "Product deleted successfully" });
     }
 

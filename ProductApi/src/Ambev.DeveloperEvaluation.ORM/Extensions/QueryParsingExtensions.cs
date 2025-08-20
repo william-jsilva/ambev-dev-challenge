@@ -12,40 +12,59 @@ public static class QueryParsingExtensions
         {
             Page = TryInt(request.Query["_page"], defaultPage),
             Size = Math.Min(TryInt(request.Query["_size"], defaultSize), maxSize),
-            Order = request.Query["_order"].FirstOrDefault()
+            Order = request.Query["_order"].FirstOrDefault() ?? string.Empty
         };
 
+        // Track range filters to combine min/max values
+        var rangeFilters = new Dictionary<string, (string? Min, string? Max)>();
+
+        // Process all query parameters
         foreach (var kv in request.Query)
         {
             var key = kv.Key;
             var value = kv.Value.ToString();
 
-            if (key.StartsWith("_")) continue; // reserved (_page, _size, _order, _min*, _max*)
+            // Skip reserved parameters
+            if (key.StartsWith("_")) continue;
 
-            if (value.Contains('*'))
-                qp.Wildcards[key] = value;
-            else
-                qp.Equality[key] = value;
-        }
-
-        foreach (var kv in request.Query)
-        {
-            var key = kv.Key;
-            var value = kv.Value.ToString();
-
+            // Handle range filters (_min and _max)
             var minMatch = Regex.Match(key, @"^_min(.+)$", RegexOptions.IgnoreCase);
             var maxMatch = Regex.Match(key, @"^_max(.+)$", RegexOptions.IgnoreCase);
 
             if (minMatch.Success)
             {
                 var field = FirstLower(minMatch.Groups[1].Value);
-                qp.Ranges[field] = (value, qp.Ranges.TryGetValue(field, out var r) ? r.Max : null);
+                if (rangeFilters.TryGetValue(field, out var existing))
+                    rangeFilters[field] = (value, existing.Max);
+                else
+                    rangeFilters[field] = (value, null);
             }
-            if (maxMatch.Success)
+            else if (maxMatch.Success)
             {
                 var field = FirstLower(maxMatch.Groups[1].Value);
-                qp.Ranges[field] = (qp.Ranges.TryGetValue(field, out var r) ? r.Min : null, value);
+                if (rangeFilters.TryGetValue(field, out var existing))
+                    rangeFilters[field] = (existing.Min, value);
+                else
+                    rangeFilters[field] = (null, value);
             }
+            else
+            {
+                // Handle regular filters (equality and wildcards)
+                if (value.Contains('*'))
+                {
+                    qp.AddWildcardFilter(key, value);
+                }
+                else
+                {
+                    qp.AddFilter(key, value);
+                }
+            }
+        }
+
+        // Add range filters to the main filters dictionary
+        foreach (var (field, (min, max)) in rangeFilters)
+        {
+            qp.AddRangeFilter(field, min ?? string.Empty, max ?? string.Empty);
         }
 
         return qp;
