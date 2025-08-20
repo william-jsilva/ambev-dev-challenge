@@ -2,6 +2,12 @@
 
 `READ CAREFULLY`
 
+## 📋 Developer Documentation
+**Important:** This project includes detailed technical documentation and implementation considerations by the developer.
+
+- **[Technical Architecture](/.doc/readme-by-william-technical-architecture.md)** - Complete technical architecture documentation with microservices, Event-Driven Architecture, Rebus, RabbitMQ, and implementation details
+- **[Final Considerations](/.doc/readme-by-william.md)** - Implementation considerations, divergences, and future evolution proposals
+
 ## Instructions
 **The test below will have up to 7 calendar days to be delivered from the date of receipt of this manual.**
 
