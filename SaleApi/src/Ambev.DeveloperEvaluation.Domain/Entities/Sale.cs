@@ -24,7 +24,7 @@ public class Sale : BaseEntity
     public long SaleNumber { get; set; }
 
     /// <summary>
-    /// <see langword="null"/> if the sale is not completed, otherwise the total amount of the sale.
+    /// Total amount of the sale
     /// </summary>
     public decimal TotalSaleAmount { get; set; }
 

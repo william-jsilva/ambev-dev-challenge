@@ -1,4 +1,4 @@
-using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Application.Dtos;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 
@@ -10,7 +10,7 @@ public class ListSalesResult
     /// <summary>
     /// List of sales returned by the operation
     /// </summary>
-    public IEnumerable<Sale> Sales { get; set; } = [];
+    public IEnumerable<SaleDto> Sales { get; set; } = [];
 
     /// <summary>
     /// Total number of items in the list

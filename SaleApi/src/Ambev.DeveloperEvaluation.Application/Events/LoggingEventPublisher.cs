@@ -31,3 +31,4 @@ public class LoggingEventPublisher : IEventPublisher
         await Task.CompletedTask;
     }
 }
+

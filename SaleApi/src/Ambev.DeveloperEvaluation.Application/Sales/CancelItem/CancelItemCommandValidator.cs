@@ -17,3 +17,4 @@ public class CancelItemCommandValidator : AbstractValidator<CancelItemCommand>
             .NotEmpty().WithMessage("ProductId is required");
     }
 }
+

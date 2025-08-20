@@ -1,3 +1,4 @@
+using Ambev.DeveloperEvaluation.Application.Dtos;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using AutoMapper;
 
@@ -13,6 +14,7 @@ public class ListSalesProfile : Profile
     /// </summary>
     public ListSalesProfile()
     {
-        CreateMap<Sale, ListSalesResult>();
+        CreateMap<Sale, SaleDto>();
+        CreateMap<SaleProduct, SaleProductDto>();
     }
 }

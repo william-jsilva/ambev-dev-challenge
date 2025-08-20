@@ -34,3 +34,4 @@ public struct CancelItemCommand(Guid saleId, Guid productId) : IRequest<CancelIt
         };
     }
 }
+

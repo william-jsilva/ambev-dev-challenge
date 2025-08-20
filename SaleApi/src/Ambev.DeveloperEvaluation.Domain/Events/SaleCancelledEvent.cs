@@ -21,3 +21,4 @@ public class SaleCancelledEvent
         Sale = sale ?? throw new ArgumentNullException(nameof(sale));
     }
 }
+

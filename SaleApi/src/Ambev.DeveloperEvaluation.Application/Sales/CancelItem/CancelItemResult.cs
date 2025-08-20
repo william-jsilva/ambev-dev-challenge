@@ -20,3 +20,4 @@ public class CancelItemResult
     /// </summary>
     public Guid SaleId { get; set; }
 }
+

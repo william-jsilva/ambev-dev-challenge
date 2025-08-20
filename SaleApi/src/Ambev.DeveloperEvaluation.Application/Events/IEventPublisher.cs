@@ -13,3 +13,4 @@ public interface IEventPublisher
     /// <returns>A task that represents the asynchronous operation</returns>
     Task PublishAsync(object @event, CancellationToken cancellationToken = default);
 }
+

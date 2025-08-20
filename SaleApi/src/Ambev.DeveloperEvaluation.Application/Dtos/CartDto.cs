@@ -11,6 +11,21 @@ public class SaleDto
     public Guid Id { get; set; }
 
     /// <summary>
+    /// Sale number
+    /// </summary>
+    public long SaleNumber { get; set; }
+
+    /// <summary>
+    /// Total amount of the sale
+    /// </summary>
+    public decimal TotalSaleAmount { get; set; }
+
+    /// <summary>
+    /// Branch where the sale was made
+    /// </summary>
+    public string? Branch { get; set; }
+
+    /// <summary>
     /// User Id
     /// </summary>
     public Guid UserId { get; set; }
