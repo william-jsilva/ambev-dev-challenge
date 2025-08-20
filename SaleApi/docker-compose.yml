@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  ambev.william.sale.db:
+    container_name: ambev_william_sale_db
+    image: postgres:13
+    environment:
+      POSTGRES_DB: db_sale
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: ev@luAt10n
+    ports:
+      - "5433:5432"
+      - "32769:5432"
+    restart: unless-stopped
+    networks:
+      - ambev_network
+  
+  ambev.william.sale.webapi:
+    container_name: ambev_william_sale_webapi
+    image: ${DOCKER_REGISTRY-}ambevdeveloperevaluationwebapi
+    build:
+      context: .
+      dockerfile: src/Ambev.DeveloperEvaluation.WebApi/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "4080:8080"
+      - "4081:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - ambev.william.sale.db
+    networks:
+      - ambev_network
+
+networks:
+  ambev_network:
+    driver: bridge
